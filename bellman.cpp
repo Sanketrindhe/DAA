@@ -1,55 +1,80 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <climits>
 using namespace std;
 
+// Edge structure to store the graph
 struct Edge {
-    int src, dest, wgt;
+    int u, v, weight;
 };
 
-struct Graph {
-    int V, E;
-    vector<Edge> edges;
-    Graph(int V, int E) : V(V), E(E), edges(E) {}
-};
+// Bellman-Ford Algorithm
+void bellmanFord(int vertices, int edges, vector<Edge>& graph, int source) {
+    // Step 1: Initialize distances from source to all other vertices as INFINITE
+    vector<int> distance(vertices, INT_MAX);
+    distance[source] = 0;
 
-void printArr(const vector<int>& dist) {
-    cout << "\nVertex Distance from source:\n";
-    for (int i = 0; i < dist.size(); i++)
-        cout << i << "\t\t" << dist[i] << "\n";
-}
-
-void bellmanFord(const Graph& graph, int src) {
-    int V = graph.V, E = graph.E;
-    vector<int> dist(V, INT_MAX);
-    dist[src] = 0;
-
-    for (int i = 1; i < V; i++) {
-        for (const auto& edge : graph.edges) {
-            if (dist[edge.src] != INT_MAX && dist[edge.src] + edge.wgt < dist[edge.dest])
-                dist[edge.dest] = dist[edge.src] + edge.wgt;
+    // Step 2: Relax all edges 'vertices - 1' times
+    for (int i = 1; i < vertices; ++i) {
+        for (int j = 0; j < edges; ++j) {
+            int u = graph[j].u;
+            int v = graph[j].v;
+            int weight = graph[j].weight;
+            
+            if (distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
+                distance[v] = distance[u] + weight;
+            }
         }
     }
 
-    for (const auto& edge : graph.edges) {
-        if (dist[edge.src] != INT_MAX && dist[edge.src] + edge.wgt < dist[edge.dest]) {
-            cout << "Graph contains negative weight cycle";
+    // Step 3: Check for negative-weight cycles
+    for (int i = 0; i < edges; ++i) {
+        int u = graph[i].u;
+        int v = graph[i].v;
+        int weight = graph[i].weight;
+
+        if (distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
+            cout << "Graph contains negative weight cycle" << endl;
             return;
         }
     }
 
-    printArr(dist);
+    // Print the shortest distances
+    cout << "Vertex Distance from Source " << source << ":\n";
+    for (int i = 0; i < vertices; ++i) {
+        if (distance[i] == INT_MAX)
+            cout << i << ": INF\n";
+        else
+            cout << i << ": " << distance[i] << endl;
+    }
 }
 
 int main() {
-    int V, E;
-    cout << "Enter number of vertices and edges: ";
-    cin >> V >> E;
+    int vertices, edges;
 
-    Graph graph(V, E);
-    for (int i = 0; i < E; i++) {
-        cout << "Enter edge (src dest wgt): ";
-        cin >> graph.edges[i].src >> graph.edges[i].dest >> graph.edges[i].wgt;
+    // Taking input for number of vertices and edges
+    cout << "Enter the number of vertices: ";
+    cin >> vertices;
+    cout << "Enter the number of edges: ";
+    cin >> edges;
+
+    // Vector to store edges
+    vector<Edge> graph(edges);
+
+    // Taking input for each edge
+    cout << "Enter the edges (u, v, weight) format:\n";
+    for (int i = 0; i < edges; ++i) {
+        cout << "Edge " << i + 1 << ": ";
+        cin >> graph[i].u >> graph[i].v >> graph[i].weight;
     }
 
-    bellmanFord(graph, 0);
+    int source;
+    // Taking input for the source vertex
+    cout << "Enter the source vertex: ";
+    cin >> source;
+
+    // Run the Bellman-Ford Algorithm
+    bellmanFord(vertices, edges, graph, source);
+
     return 0;
 }
